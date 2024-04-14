@@ -1,0 +1,49 @@
+---
+- hosts: webservers
+  become: yes
+  tasks:
+    - name: Install Nginx
+      apt:
+        name: nginx
+        state: present
+
+    - name: Start Nginx
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+
+- hosts: servers
+  become: yes
+  vars_files:
+    - /home/einfochips/Task_Evaluation/Task_Ansible/mysql/vars/main.yml
+  tasks:
+    - name: Install MySQL
+      apt:
+        name: ['mysql-server', 'mysql-client', 'python2.7']
+        state: present
+    - name: Ensure pymysql is present
+      pip:
+        name: pymysql
+        state: present
+    - name: Start MySQL
+      service:
+        name: mysql
+        state: started
+        enabled: yes
+#    - name: Set MySQL root password
+#      mysql_user:
+#        name: root
+#        password: "{{ mysql_root_password }}"
+#        check_implicit_admin: yes
+#        login_unix_socket: /var/run/mysqld/mysqld.sock
+#      become: yes
+
+    - name: Log in to MySQL as root
+      mysql_db:
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+        state: present
+        name: mysql
+
